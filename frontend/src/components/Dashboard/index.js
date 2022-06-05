@@ -15,6 +15,7 @@ import { addLike, setLikes } from "../Redux/reducers/like";
 import jwt_decode from "jwt-decode";
 import {
   addComment,
+  deleteCommentById,
   setComments,
   updateCommentById,
 } from "../Redux/reducers/comments";
@@ -258,6 +259,25 @@ const Dashboard = () => {
 
   //=================================
 
+  const deleteComment = (id) => {
+    axios
+      .delete(`http://localhost:5000/comments/delete/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((result) => {
+        dispatch(deleteCommentById(id));
+      })
+      .catch((error) => {
+        {
+          console.log(error.response.data.message);
+        }
+      });
+  };
+
+  //=================================
+
   useEffect(() => {
     getAllPosts();
     getAllLikes();
@@ -410,6 +430,14 @@ const Dashboard = () => {
                                 }}
                               >
                                 Update
+                              </button>
+                              <button
+                                id={comment.id}
+                                onClick={(e) => {
+                                  deleteComment(e.target.id);
+                                }}
+                              >
+                                Delete
                               </button>
                             </>
                           ) : (
