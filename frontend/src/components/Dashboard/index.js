@@ -13,7 +13,7 @@ import "./style.css";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { addLike, setLikes } from "../Redux/reducers/like";
 import jwt_decode from "jwt-decode";
-import { setComments } from "../Redux/reducers/comments";
+import { addComment, setComments } from "../Redux/reducers/comments";
 
 const Dashboard = () => {
   const [content, setContent] = useState("");
@@ -198,6 +198,32 @@ const Dashboard = () => {
 
   //=================================
 
+  const newComment = async (e, id) => {
+    e.preventDefault();
+    axios
+      .post(
+        `http://localhost:5000/comments/${id}`,
+        { comment },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then((res) => {
+        if (res.data.success) {
+          dispatch(addComment({ comment, post_id: id }));
+          getAllComments();
+          formRef.current.reset();
+        }
+      })
+      .catch((error) => {
+        console.log(error.response.data.message);
+      });
+  };
+
+  //=================================
+
   useEffect(() => {
     getAllPosts();
     getAllLikes();
@@ -313,6 +339,28 @@ const Dashboard = () => {
                 }
               </div>
               <div className="comment-div">
+                <div className="comment-container">
+                  <h1>
+                    {jwt_decode(token).firstName} {jwt_decode(token).lastName}
+                  </h1>
+                  <form ref={formRef} className="addComment">
+                    <textarea
+                      placeholder="comment  here"
+                      onChange={(e) => {
+                        setComment(e.target.value);
+                      }}
+                    ></textarea>
+                    <div className="comment-action">
+                      <button
+                        onClick={(e) => {
+                          newComment(e, post.id);
+                        }}
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </form>
+                </div>
                 {show &&
                   comments.map((comment, index) => {
                     return (
