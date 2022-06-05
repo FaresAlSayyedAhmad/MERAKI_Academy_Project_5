@@ -13,7 +13,11 @@ import "./style.css";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { addLike, setLikes } from "../Redux/reducers/like";
 import jwt_decode from "jwt-decode";
-import { addComment, setComments } from "../Redux/reducers/comments";
+import {
+  addComment,
+  setComments,
+  updateCommentById,
+} from "../Redux/reducers/comments";
 
 const Dashboard = () => {
   const [content, setContent] = useState("");
@@ -21,7 +25,9 @@ const Dashboard = () => {
   const [showUpdate, setShowUpdate] = useState(false);
   const [open, setOpen] = useState(false);
   const [comment, setComment] = useState("");
+  const [updatecomment, setupdatecomment] = useState("");
   const [dropdownId, setDropdownId] = useState("");
+  const [dropdownIdCom, setDropdownIdCom] = useState("");
   const [updatecontent, setUpdatecontent] = useState("");
   const [liked, setLiked] = useState(false);
 
@@ -224,6 +230,34 @@ const Dashboard = () => {
 
   //=================================
 
+  const editComment = (id) => {
+    axios
+      .put(`http://localhost:5000/comments/update/${id}`, {
+        comment: updatecomment,
+      })
+      .then((result) => {
+        if (result.data.success) {
+          dispatch(updateCommentById({ comment: updatecomment, id }));
+        }
+      })
+      .catch((error) => {
+        {
+          console.log(error);
+        }
+      });
+  };
+
+  //=================================
+
+  const updateFormComment = (e, commentcomment) => {
+    setShowUpdate(!showUpdate);
+    setDropdownIdCom(e.target.id);
+    setupdatecomment(commentcomment);
+    setOpen(!open);
+  };
+
+  //=================================
+
   useEffect(() => {
     getAllPosts();
     getAllLikes();
@@ -369,11 +403,40 @@ const Dashboard = () => {
                           {post.id === comment.post_id ? (
                             <>
                               <p>{comment.comment}</p>
+                              <button
+                                id={comment.id}
+                                onClick={(e) => {
+                                  updateFormComment(e, comment.comment);
+                                }}
+                              >
+                                Update
+                              </button>
                             </>
                           ) : (
                             ""
                           )}
                         </div>
+                        {comment.id == dropdownIdCom && showUpdate ? (
+                          <form
+                            className="update-form"
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              setShowUpdate(false);
+                              editComment(comment.id);
+                            }}
+                            ref={formRef}
+                          >
+                            <input
+                              defaultValue={comment.comment}
+                              onChange={(e) => {
+                                setupdatecomment(e.target.value);
+                              }}
+                            />
+                            <button>Update</button>
+                          </form>
+                        ) : (
+                          ""
+                        )}
                       </div>
                     );
                   })}
