@@ -13,13 +13,14 @@ import "./style.css";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { addLike, setLikes } from "../Redux/reducers/like";
 import jwt_decode from "jwt-decode";
+import { setComments } from "../Redux/reducers/comments";
 
 const Dashboard = () => {
   const [content, setContent] = useState("");
   const [show, setShow] = useState(false);
   const [showUpdate, setShowUpdate] = useState(false);
   const [open, setOpen] = useState(false);
-
+  const [comment, setComment] = useState("");
   const [dropdownId, setDropdownId] = useState("");
   const [updatecontent, setUpdatecontent] = useState("");
   const [liked, setLiked] = useState(false);
@@ -43,6 +44,12 @@ const Dashboard = () => {
   const { token } = useSelector((state) => {
     return {
       token: state.auth.token,
+    };
+  });
+
+  const { comments } = useSelector((state) => {
+    return {
+      comments: state.comments.comments,
     };
   });
 
@@ -176,11 +183,25 @@ const Dashboard = () => {
   };
   //=================================
 
+  const getAllComments = async () => {
+    axios
+      .get(`http://localhost:5000/comments`)
+      .then((result) => {
+        dispatch(setComments(result.data.result));
+        setShow(true);
+      })
+      .catch((error) => {
+        setShow(false);
+        console.log(error.response.data.message);
+      });
+  };
+
   //=================================
 
   useEffect(() => {
     getAllPosts();
     getAllLikes();
+    getAllComments();
   }, []);
 
   return (
@@ -290,6 +311,25 @@ const Dashboard = () => {
                     return el.post_id == post.id;
                   }).length
                 }
+              </div>
+              <div className="comment-div">
+                {show &&
+                  comments.map((comment, index) => {
+                    return (
+                      <div key={index}>
+                        <div className="comment">
+                          {post.id === comment.post_id ? (
+                            <>
+                              <p>{comment.comment}</p>
+                            </>
+                          ) : (
+                            ""
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                {!comments.length ? <h1>No comments</h1> : ""}
               </div>
             </div>
           );
